@@ -29,9 +29,7 @@ public class Percolation {
 
     // opens the site (row, col) if it is not open already
     public void open(int row, int col) {
-        if (row > n || row < 1 || col > n || col < 1) {
-            throw new IllegalArgumentException();
-        }
+        validate(row, col);
         row--;
         col--;
         if (!grid[row][col]) {
@@ -41,24 +39,24 @@ public class Percolation {
             boolean bottom = false;
 
             if (row > 0 && grid[row - 1][col]) {
-                top = topConnected[uf.find((row - 1) * n + col)];
-                bottom = bottomConnected[uf.find((row - 1) * n + col)];
-                uf.union(row * n + col, (row - 1) * n + col);
+                top = topConnected[find(row - 1, col)];
+                bottom = bottomConnected[find(row - 1, col)];
+                union(row, col, row - 1, col);
             }
             if (row < n - 1 && grid[row + 1][col]) {
-                top = top || topConnected[uf.find((row + 1) * n + col)];
-                bottom = bottom || bottomConnected[uf.find((row + 1) * n + col)];
-                uf.union(row * n + col, (row + 1) * n + col);
+                top = top || topConnected[find(row + 1, col)];
+                bottom = bottom || bottomConnected[find(row + 1, col)];
+                union(row, col, row + 1, col);
             }
             if (col > 0 && grid[row][col - 1]) {
-                top = top || topConnected[uf.find(row * n + col - 1)];
-                bottom = bottom || bottomConnected[uf.find(row * n + col - 1)];
-                uf.union(row * n + col, row * n + col - 1);
+                top = top || topConnected[find(row, col - 1)];
+                bottom = bottom || bottomConnected[find(row, col - 1)];
+                union(row, col, row, col - 1);
             }
             if (col < n - 1 && grid[row][col + 1]) {
-                top = top || topConnected[uf.find(row * n + col + 1)];
-                bottom = bottom || bottomConnected[uf.find(row * n + col + 1)];
-                uf.union(row * n + col, row * n + col + 1);
+                top = top || topConnected[find(row, col + 1)];
+                bottom = bottom || bottomConnected[find(row, col + 1)];
+                union(row, col, row, col + 1);
             }
             if (row == 0) {
                 top = true;
@@ -70,26 +68,22 @@ public class Percolation {
             if (top && bottom) {
                 percolated = true;
             }
-            topConnected[uf.find(row * n + col)] = top;
-            bottomConnected[uf.find(row * n + col)] = bottom;
+            topConnected[find(row, col)] = top;
+            bottomConnected[find(row, col)] = bottom;
 
         }
     }
 
     // is the site (row, col) open?
     public boolean isOpen(int row, int col) {
-        if (row > n || row < 1 || col > n || col < 1) {
-            throw new IllegalArgumentException();
-        }
+        validate(row, col);
         return grid[row - 1][col - 1];
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col) {
-        if (row > n || row < 1 || col > n || col < 1) {
-            throw new IllegalArgumentException();
-        }
-        return topConnected[uf.find((row - 1) * n + (col - 1))];
+        validate(row, col);
+        return topConnected[find(row - 1, col - 1)];
     }
 
     // returns the number of open sites
@@ -102,25 +96,21 @@ public class Percolation {
         return percolated;
     }
 
-    // private void printState() {
-    //     for (int i = 0; i < n; i++) {
-    //         for (int j = 0; j < n; j++) {
-    //             StdOut.print(grid[i][j] ? '1' : '0');
-    //         }
-    //         StdOut.println();
-    //     }
-    //     StdOut.println(String.format("%02d ", uf.find(n * n)));
-    //     for (int i = 0; i < n; i++) {
-    //         for (int j = 0; j < n; j++) {
-    //             StdOut.print(String.format("%02d ", uf.find(i * n + j)));
-    //         }
-    //         StdOut.println();
-    //     }
-    //     StdOut.println(String.format("%02d ", uf.find(n * n + 1)));
-    //     StdOut.println(percolates());
-    // }
+    private int map(int row, int col) {
+        return row * n + col;
+    }
 
-    // test client (optional)
-    // public static void main(String[] args) {
-    // }
+    private int find(int row, int col) {
+        return uf.find(map(row, col));
+    }
+
+    private void union(int row1, int col1, int row2, int col2) {
+        uf.union(map(row1, col1), map(row2, col2));
+    }
+
+    private void validate(int row, int col) {
+        if (row > n || row < 1 || col > n || col < 1) {
+            throw new IllegalArgumentException();
+        }
+    }
 }
